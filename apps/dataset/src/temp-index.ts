@@ -20,7 +20,7 @@ async function scrapePage(browser: Browser, role: string) {
         },
     });
 
-    await page.goto("https://lolalytics.com/lol/tierlist/?lane=" + role);
+    await page.goto("https://lolalytics.com/lol/tierlist/?lane=" + role + "&tier=all&patch=30");
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
     const minRole = page.locator('input[value="2"]');

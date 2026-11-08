@@ -31,17 +31,17 @@ export async function getLolalyticsQwikChampion2(
     if (championId === "monkeyking") {
         championId = "wukong";
     }
-    // convert patch from 12.21.1 to 12.21
-    patch = patch.split(".").slice(0, 2).join(".");
+    // Fork requirement: strictly use 30 days (patch=30) and all ranks (tier=all)
+    patch = "30";
 
-    // https://a1.lolalytics.com/mega/?ep=build-team&v=1&patch=14.19&c=wukong&lane=bottom&tier=emerald_plus&queue=ranked&region=all
+    // https://a1.lolalytics.com/mega/?ep=build-team&v=1&patch=30&c=wukong&lane=bottom&tier=all&queue=ranked&region=all
     const queryParams = new URLSearchParams();
     queryParams.append("ep", "build-team");
     queryParams.append("v", "1");
-    queryParams.append("tier", "emerald_plus");
+    queryParams.append("tier", "all");
     queryParams.append("queue", "ranked");
     queryParams.append("region", "all");
-    queryParams.append("patch", patch);
+    queryParams.append("patch", "30");
     queryParams.append("c", championId);
     queryParams.append("lane", role ?? "all"); // all is default?
     // if (matchupId && matchupRole) {

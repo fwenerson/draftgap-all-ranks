@@ -1,5 +1,6 @@
 import { retry } from "../utils";
 import { type LolalyticsRole } from "./roles";
+import { getLolalyticsQwikChampion } from "./qwik";
 
 export interface LolalyticsChampionResponse {
     header: Header;
@@ -222,51 +223,20 @@ export interface TopStats {
 }
 
 export async function getLolalyticsChampion(
-    patch: string,
+    patch: string = "30",
     championKey: string,
     role: LolalyticsRole | "default" = "default",
     matchup?: string,
     matchupRole?: LolalyticsRole,
 ) {
-    // convert patch from ex. 12.21.1 to 12.21
-    patch = patch.split(".").slice(0, 2).join(".");
-
-    const queryParams = new URLSearchParams();
-    queryParams.append("ep", "champion");
-    queryParams.append("p", "d");
-    queryParams.append("v", "1");
-    queryParams.append("tier", "emerald_plus");
-    queryParams.append("queue", "420");
-    queryParams.append("region", "all");
-    queryParams.append("patch", patch);
-    queryParams.append("cid", championKey);
-    queryParams.append("lane", role);
-    if (matchup && matchupRole) {
-        queryParams.append("vs", matchup);
-        queryParams.append("vslane", matchupRole);
-    }
-
-    const url = `https://ax.lolalytics.com/mega/?${queryParams.toString()}`;
-    const res = await retry(() => fetch(url));
-
-    const text = await res.text();
-    if (!text) {
-        throw new Error("No text for lolalytics champion " + championKey);
-    }
-
-    try {
-        const json = JSON.parse(text) as LolalyticsChampionResponse;
-
-        return json;
-    } catch (e) {
-        throw new Error(
-            "Error parsing JSON for lolalytics champion " +
-                championKey +
-                " url: " +
-                url,
-            {
-                cause: e,
-            },
-        );
-    }
+    // Fork requirement: strictly use 30 days (patch=30) and all ranks (tier=all)
+    const qwikRole = role === "default" ? undefined : role;
+    const data = await getLolalyticsQwikChampion(
+        "30",
+        championKey,
+        qwikRole,
+        matchup,
+        matchupRole,
+    );
+    return data as unknown as LolalyticsChampionResponse;
 }

@@ -233,7 +233,7 @@ function getDataId(objs: any) {
                 obj != undefined &&
                 obj["analysed"] !== undefined &&
                 obj["avgWr"] !== undefined &&
-                obj["enemy"] !== undefined,
+                (obj["enemy"] !== undefined || obj["runes"] !== undefined),
         )
         .toString(36);
 }
@@ -299,13 +299,15 @@ export async function getLolalyticsQwikChampion(
         matchupId = "wukong";
     }
 
-    // convert patch from ex. 12.21.1 to 12.21
-    patch = patch.split(".").slice(0, 2).join(".");
+    // Fork requirement: strictly use 30 days (patch=30) and all ranks (tier=all)
+    patch = "30";
 
     const queryParams = new URLSearchParams();
-    queryParams.append("tier", "emerald_plus");
-    queryParams.append("region", "all");
-    queryParams.append("patch", patch);
+    queryParams.append("tier", "all");
+    if (!matchupId) {
+        queryParams.append("region", "all");
+    }
+    queryParams.append("patch", "30");
     if (role) {
         queryParams.append("lane", role);
     }

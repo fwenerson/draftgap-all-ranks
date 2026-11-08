@@ -10,10 +10,16 @@ import {
     Dataset,
 } from "@draftgap/core/src/models/dataset/Dataset";
 
+const DATASET_BASE_URL =
+    (import.meta.env.VITE_DATASET_URL as string | undefined) ||
+    (import.meta.env.VITE_S3_PUBLIC_URL
+        ? `${import.meta.env.VITE_S3_PUBLIC_URL}/datasets`
+        : `https://bucket.draftgap.com/datasets`);
+
 const fetchDataset = async (name: "30-days" | "current-patch") => {
     try {
         const response = await fetch(
-            `https://bucket.draftgap.com/datasets/v${DATASET_VERSION}/${name}.json`,
+            `${DATASET_BASE_URL}/v${DATASET_VERSION}/${name}.json`,
         );
         const json = await response.json();
         return json as Dataset;
@@ -24,12 +30,12 @@ const fetchDataset = async (name: "30-days" | "current-patch") => {
 };
 
 function createDatasetContext() {
-    const [dataset] = createResource("current-patch", fetchDataset);
-
-    const [dataset30Days] = createResource("30-days", fetchDataset);
+    // Fork requirement: strictly use 30 days (patch=30) and all ranks (tier=all)
+    const [dataset] = createResource("30-days", fetchDataset);
+    const dataset30Days = dataset;
 
     const isLoaded = () =>
-        dataset() !== undefined && dataset30Days() !== undefined;
+        dataset() !== undefined;
 
     createEffect(() => {
         (window as any).DRAFTGAP_DEBUG = (window as any).DRAFTGAP_DEBUG || {};

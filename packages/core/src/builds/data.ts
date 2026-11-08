@@ -324,30 +324,35 @@ export async function fetchBuildData(
     role: Role,
     opponentTeamComp: Map<Role, string>,
 ) {
-    // convert patch from 13.7.1 to 13.7
-    const patch = dataset.version.split(".").slice(0, 2).join(".");
+    // Fork requirement: strictly use 30 days (patch=30) and all ranks (tier=all)
+    const patch = "30";
+    const championId =
+        dataset.championData[championKey]?.id?.toLowerCase() ?? championKey;
 
     const championPatchDataPromises = queryClient.fetchQuery(
         getLolalyticsChampionOptions(
             patch,
-            championKey,
+            championId,
             LOLALYTICS_ROLES[role],
         ),
     );
 
     const champion30DaysDataPromises = queryClient.fetchQuery(
-        getLolalyticsChampionOptions("30", championKey, LOLALYTICS_ROLES[role]),
+        getLolalyticsChampionOptions("30", championId, LOLALYTICS_ROLES[role]),
     );
 
     const matchup30DaysDataPromises = [...opponentTeamComp.entries()].map(
-        ([opponentRole, opponentChampionKey]) =>
-            queryClient
+        ([opponentRole, opponentChampionKey]) => {
+            const opponentChampionId =
+                dataset.championData[opponentChampionKey]?.id?.toLowerCase() ??
+                opponentChampionKey;
+            return queryClient
                 .fetchQuery(
                     getLolalyticsChampionOptions(
                         "30",
-                        championKey,
+                        championId,
                         LOLALYTICS_ROLES[role],
-                        opponentChampionKey,
+                        opponentChampionId,
                         LOLALYTICS_ROLES[opponentRole],
                     ),
                 )
@@ -355,7 +360,8 @@ export async function fetchBuildData(
                     championKey: opponentChampionKey,
                     role: opponentRole,
                     championData,
-                })),
+                }));
+        },
     );
 
     const results = await Promise.all([

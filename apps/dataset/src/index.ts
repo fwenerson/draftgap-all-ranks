@@ -1,7 +1,6 @@
 import "dotenv/config";
 import { getChampionDataFromLolalytics } from "./lolalytics";
 import {
-    deleteDatasetMatchupSynergyData,
     type Dataset,
     removeRankBias,
 } from "@draftgap/core/src/models/dataset/Dataset";
@@ -100,13 +99,7 @@ async function main() {
         },
     }));
 
-    const datasetCurrentPatch = await getDataset(
-        currentVersion,
-        champions,
-        runes,
-        items,
-        summonerSpells,
-    );
+    // Fork requirement: strictly use 30 days (patch=30) and all ranks (tier=all)
     const dataset30days = await getDataset(
         "30",
         champions,
@@ -115,10 +108,9 @@ async function main() {
         summonerSpells,
     );
 
-    deleteDatasetMatchupSynergyData(datasetCurrentPatch);
-
-    await storeDataset(datasetCurrentPatch, { name: "current-patch" });
+    // Stored for both 30-days and current-patch so any consumer receives the 30-day all-ranks data
     await storeDataset(dataset30days, { name: "30-days" });
+    await storeDataset(dataset30days, { name: "current-patch" });
 }
 
 function riotRunesToRuneData(runes: RiotRunePath[]) {
