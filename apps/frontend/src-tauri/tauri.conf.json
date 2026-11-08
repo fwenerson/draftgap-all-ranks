@@ -38,8 +38,7 @@
             "deb": {
                 "depends": []
             }
-        },
-        "createUpdaterArtifacts": "v1Compatible"
+        }
     },
     "productName": "DraftGap",
     "mainBinaryName": "DraftGap",
